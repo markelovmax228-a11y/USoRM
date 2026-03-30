@@ -1,23 +1,107 @@
-<h2>Вход</h2>
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Вход</title>
+    <style>
+        /* Центрируем форму ровно посередине экрана */
+        body {
+            font-family: -apple-system, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center; /* Центр по вертикали */
+            min-height: 100vh;
+            margin: 0;
+            background-color: #f0f2f5;
+        }
 
-<input id="firstName" placeholder="Имя">
-<input id="password" type="password" placeholder="Пароль">
+        .login-card {
+            width: 100%;
+            max-width: 350px;
+            padding: 25px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            box-sizing: border-box;
+            text-align: center;
+        }
 
-<button onclick="login()">Войти</button>
+        input {
+            width: 100%;
+            padding: 12px;
+            margin: 10px 0;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+            box-sizing: border-box;
+        }
 
-<script>
-function login() {
-    fetch("/login", {
-        method: "POST",
-        headers: {"Content-Type": "application/json"},
-        body: JSON.stringify({
-            firstName: firstName.value,
-            password: password.value
+        button {
+            width: 100%;
+            padding: 12px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+
+        button:active { background-color: #0056b3; }
+
+        a {
+            display: block;
+            margin-top: 15px;
+            color: #007bff;
+            text-decoration: none;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="login-card">
+        <h2>Вход</h2>
+
+        <input id="firstName" placeholder="Имя">
+        <input id="password" type="password" placeholder="Пароль">
+
+        <button onclick="login()">Войти</button>
+        
+        <a href="/register.html">Создать аккаунт</a>
+        <a href="/">Назад к новостям</a>
+    </div>
+
+    <script>
+    function login() {
+        const nameVal = document.getElementById("firstName").value;
+        const passVal = document.getElementById("password").value;
+
+        if(!nameVal || !passVal) return alert("Заполните поля");
+
+        fetch("/login", {
+            method: "POST",
+            headers: {"Content-Type": "application/json"},
+            body: JSON.stringify({
+                firstName: nameVal,
+                password: passVal
+            })
         })
-    }).then(res => res.json())
-    .then(data => {
-        if (data.success) location.href = "/";
-        else alert("Ошибка");
-    });
-}
-</script>
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                location.href = "/"; // Уводим на главную
+            } else {
+                alert("Неверное имя или пароль");
+            }
+        })
+        .catch(err => alert("Ошибка сервера"));
+    }
+    </script>
+
+</body>
+</html>
