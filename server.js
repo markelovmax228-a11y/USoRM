@@ -86,18 +86,24 @@ app.post("/register", async (req, res) => {
 
 app.post("/login", async (req, res) => {
     const { firstName, password } = req.body;
-    const userRes = await pool.query(
-        "SELECT * FROM users WHERE firstName=$1 AND password=$2",
-        [firstName, password]
-    );
-    
-    if (userRes.rows.length > 0) {
-        req.session.user = userRes.rows[0];
-        res.json({ success: true });
-    } else {
-        res.json({ success: false });
+    try {
+        const userRes = await pool.query(
+            "SELECT * FROM users WHERE firstName=$1 AND password=$2",
+            [firstName, password]
+        );
+        
+        if (userRes.rows.length > 0) {
+            // В PG данные лежат в rows[0]
+            req.session.user = userRes.rows[0]; 
+            res.json({ success: true });
+        } else {
+            res.json({ success: false });
+        }
+    } catch (err) {
+        res.status(500).json({ error: "Ошибка базы данных" });
     }
 });
+
 
 app.get("/me", (req, res) => {
     if (!req.session.user) return res.sendStatus(401);
