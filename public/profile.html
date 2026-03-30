@@ -1,18 +1,139 @@
-<h1>Профиль</h1>
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Профиль</title>
+    <style>
+        body {
+            font-family: -apple-system, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            margin: 0;
+            background-color: #f0f2f5;
+        }
 
-<div id="profile"></div>
+        .container {
+            width: 90%;
+            max-width: 400px;
+            text-align: center;
+        }
 
-<script>
-fetch("/me")
-.then(res => res.json())
-.then(user => {
-    profile.innerHTML = `
-        <div class="passport">
-            <h2>Паспорт</h2>
-            <p>${user.firstName}</p>
-            <p>Серия: 118</p>
-            <p>Номер: ${user.passportNumber}</p>
-            <p>${user.role === "leader" ? "Глава" : "Гражданин"}</p>
+        /* Стиль карточки паспорта */
+        .passport-card {
+            background: white;
+            border: 2px solid #007bff;
+            border-radius: 15px;
+            padding: 20px;
+            text-align: left;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .passport-card::before {
+            content: "PASSPORT";
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            font-weight: bold;
+            color: #eee;
+            font-size: 20px;
+        }
+
+        h2 { color: #007bff; margin-top: 0; border-bottom: 1px solid #eee; padding-bottom: 10px; }
+        
+        .info-row { margin: 10px 0; font-size: 16px; }
+        .label { color: #666; font-size: 12px; display: block; text-transform: uppercase; }
+        .value { font-weight: bold; color: #1c1e21; font-size: 18px; }
+
+        .role-badge {
+            display: inline-block;
+            margin-top: 10px;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: bold;
+            background: #e7f3ff;
+            color: #007bff;
+        }
+
+        .role-leader { background: #fff3cd; color: #856404; }
+
+        a.back-btn {
+            display: inline-block;
+            margin-top: 20px;
+            text-decoration: none;
+            color: #666;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>Профиль</h1>
+        
+        <div id="profile">
+            <!-- Сюда загрузятся данные -->
+            <p>Загрузка данных...</p>
+        </div>
+
+        <a href="/" class="back-btn">← Назад к новостям</a>
+    </div>
+
+    <script>
+    fetch("/me")
+    .then(res => {
+        if (!res.ok) throw new Error();
+        return res.json();
+    })
+    .then(user => {
+        // Если сервер вернул массив (бывает в PG), берем первый элемент
+        const u = Array.isArray(user) ? user[0] : user;
+
+        const profileDiv = document.getElementById("profile");
+        const isLeader = u.role === "leader";
+
+        profileDiv.innerHTML = `
+            <div class="passport-card">
+                <h2>ПАСПОРТ</h2>
+                
+                <div class="info-row">
+                    <span class="label">Имя и Фамилия</span>
+                    <span class="value">${u.firstname} ${u.lastname || ''}</span>
+                </div>
+
+                <div class="info-row" style="display: flex; gap: 40px;">
+                    <div>
+                        <span class="label">Серия</span>
+                        <span class="value">118</span>
+                    </div>
+                    <div>
+                        <span class="label">Номер</span>
+                        <span class="value">${u.passportnumber}</span>
+                    </div>
+                </div>
+
+                <div class="info-row">
+                    <span class="label">Статус</span>
+                    <span class="role-badge ${isLeader ? 'role-leader' : ''}">
+                        ${isLeader ? "ГЛАВА" : "ГРАЖДАНИН"}
+                    </span>
+                </div>
+            </div>
         `;
-});
-</script>
+    })
+    .catch(() => {
+        document.getElementById("profile").innerHTML = `
+            <p>Вы не авторизованы</p>
+            <a href="/login.html" style="color: #007bff;">Войти</a>
+        `;
+    });
+    </script>
+
+</body>
+</html>
