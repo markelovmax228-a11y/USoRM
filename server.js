@@ -128,5 +128,25 @@ app.post("/posts", async (req, res) => {
     res.json({ success: true });
 });
 
+
+// ВЫХОД
+app.get("/logout", (req, res) => {
+    req.session.destroy();
+    res.json({ success: true });
+});
+
+// УДАЛЕНИЕ ПОСТА (только для лидеров)
+app.delete("/posts/:id", async (req, res) => {
+    const user = Array.isArray(req.session.user) ? req.session.user[0] : req.session.user;
+    
+    if (!user || user.role !== "leader") {
+        return res.status(403).json({ error: "Нет прав" });
+    }
+
+    await pool.query("DELETE FROM posts WHERE id = $1", [req.params.id]);
+    res.json({ success: true });
+});
+
+
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
