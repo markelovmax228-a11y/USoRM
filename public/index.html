@@ -1,36 +1,136 @@
-<h1>Новости</h1>
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <!-- Обязательный тег, чтобы сайт не был мелким на телефоне -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Новости</title>
+    <style>
+        /* Центрируем всё содержимое */
+        body {
+            font-family: -apple-system, system-ui, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center; /* Центр по горизонтали */
+            padding: 20px;
+            margin: 0;
+            background-color: #f0f2f5;
+            color: #1c1e21;
+        }
 
-<a href="/profile.html">Профиль</a>
-<a href="/login.html">Вход</a>
+        /* Контейнер для формы и новостей */
+        .container {
+            width: 100%;
+            max-width: 500px; /* Чтобы на ПК не растягивалось слишком сильно */
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
 
-<textarea id="postText"></textarea>
-<button onclick="createPost()">Опубликовать</button>
+        h1 { text-align: center; }
 
-<div id="posts"></div>
+        /* Стили для ссылок-кнопок */
+        .nav {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        .nav a {
+            text-decoration: none;
+            color: #007bff;
+            font-size: 14px;
+        }
 
-<script>
-function loadPosts() {
-    fetch("/posts")
-    .then(res => res.json())
-    .then(data => {
-        posts.innerHTML = "";
-        data.forEach(p => {
-            posts.innerHTML += `
-            <div class="post">
-                <b>${p.author}</b><br>
-                ${p.content}
-            </div>`;
+        /* Поле ввода и кнопка */
+        textarea {
+            width: 100%;
+            height: 100px;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            resize: vertical;
+            box-sizing: border-box; /* Чтобы padding не раздувал ширину */
+            font-size: 16px; /* 16px предотвращает авто-зум на iPhone */
+        }
+
+        button {
+            width: 100%;
+            padding: 12px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-weight: bold;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        button:active { background-color: #0056b3; }
+
+        /* Стиль карточки поста */
+        .post {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-top: 15px;
+            word-wrap: break-word; /* Чтобы длинный текст не вылезал */
+            text-align: left;
+        }
+        .post b { color: #007bff; display: block; margin-bottom: 5px; }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>Новости</h1>
+
+        <div class="nav">
+            <a href="/profile.html">Профиль</a>
+            <a href="/login.html">Вход</a>
+            <a href="/register.html">Регистрация</a>
+        </div>
+
+        <textarea id="postText" placeholder="Что нового?"></textarea>
+        <button onclick="createPost()">Опубликовать</button>
+
+        <div id="posts"></div>
+    </div>
+
+    <script>
+    const postsDiv = document.getElementById("posts");
+
+    function loadPosts() {
+        fetch("/posts")
+        .then(res => res.json())
+        .then(data => {
+            postsDiv.innerHTML = "";
+            // Разворачиваем массив, чтобы новые посты были сверху
+            data.reverse().forEach(p => {
+                postsDiv.innerHTML += `
+                <div class="post">
+                    <b>${p.author}</b>
+                    ${p.content}
+                </div>`;
+            });
         });
-    });
-}
+    }
 
-function createPost() {
-    fetch("/posts", {
-        method: "POST",
-        headers: {"Content-Type": "application/json"},
-        body: JSON.stringify({content: postText.value})
-    }).then(loadPosts);
-}
+    function createPost() {
+        const text = document.getElementById("postText").value;
+        if(!text.trim()) return alert("Введите текст");
 
-loadPosts();
-</script>
+        fetch("/posts", {
+            method: "POST",
+            headers: {"Content-Type": "application/json"},
+            body: JSON.stringify({content: text})
+        }).then(() => {
+            document.getElementById("postText").value = ""; // Очистить поле
+            loadPosts(); // Обновить список
+        });
+    }
+
+    loadPosts();
+    </script>
+</body>
+</html>
