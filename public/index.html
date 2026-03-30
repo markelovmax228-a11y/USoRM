@@ -1,0 +1,49 @@
+<h1>Новости</h1>
+
+<a href="/profile.html">Профиль</a>
+
+<textarea id="postText"></textarea>
+<button onclick="createPost()">Опубликовать</button>
+
+<h2>Уведомления</h2>
+<div id="notifications"></div>
+
+<h2>Посты</h2>
+<div id="posts"></div>
+
+<script>
+function loadPosts() {
+    fetch("/posts")
+    .then(res => res.json())
+    .then(data => {
+        posts.innerHTML = "";
+        data.forEach(p => {
+            posts.innerHTML += `<div class="post">
+                <b>${p.firstName}</b><br>${p.content}
+            </div>`;
+        });
+    });
+}
+
+function loadNotif() {
+    fetch("/notifications")
+    .then(res => res.json())
+    .then(data => {
+        notifications.innerHTML = "";
+        data.forEach(n => {
+            notifications.innerHTML += `<div class="notif">${n.text}</div>`;
+        });
+    });
+}
+
+function createPost() {
+    fetch("/posts", {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({content: postText.value})
+    }).then(loadPosts);
+}
+
+loadPosts();
+loadNotif();
+          </script>
