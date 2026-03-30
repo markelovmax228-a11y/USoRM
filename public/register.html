@@ -1,0 +1,20 @@
+<h2>Регистрация</h2>
+
+<input id="firstName" placeholder="Имя">
+<input id="lastName" placeholder="Фамилия">
+<input id="password" type="password" placeholder="Пароль">
+<button onclick="register()">Создать</button>
+
+<script>
+function register() {
+    fetch("/register", {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({
+            firstName: firstName.value,
+            lastName: lastName.value,
+            password: password.value
+        })
+    }).then(() => location.href = "/login.html");
+}
+</script>
