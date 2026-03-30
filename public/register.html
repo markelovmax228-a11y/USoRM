@@ -1,20 +1,112 @@
-<h2>Регистрация</h2>
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Регистрация</title>
+    <style>
+        /* Центрируем форму */
+        body {
+            font-family: -apple-system, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            margin: 0;
+            background-color: #f0f2f5;
+        }
 
-<input id="firstName" placeholder="Имя">
-<input id="lastName" placeholder="Фамилия">
-<input id="password" type="password" placeholder="Пароль">
-<button onclick="register()">Создать</button>
+        .reg-card {
+            width: 100%;
+            max-width: 350px;
+            padding: 25px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            box-sizing: border-box;
+            text-align: center;
+        }
 
-<script>
-function register() {
-    fetch("/register", {
-        method: "POST",
-        headers: {"Content-Type": "application/json"},
-        body: JSON.stringify({
-            firstName: firstName.value,
-            lastName: lastName.value,
-            password: password.value
+        h2 { margin-top: 0; color: #1c1e21; }
+
+        input {
+            width: 100%;
+            padding: 12px;
+            margin: 8px 0;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+            box-sizing: border-box;
+        }
+
+        button {
+            width: 100%;
+            padding: 12px;
+            background-color: #28a745; /* Зеленый для регистрации */
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+
+        button:active { background-color: #1e7e34; }
+
+        a {
+            display: block;
+            margin-top: 15px;
+            color: #007bff;
+            text-decoration: none;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="reg-card">
+        <h2>Регистрация</h2>
+
+        <input id="firstName" placeholder="Имя">
+        <input id="lastName" placeholder="Фамилия">
+        <input id="password" type="password" placeholder="Пароль">
+        
+        <button onclick="register()">Создать аккаунт</button>
+        
+        <a href="/login.html">Уже есть аккаунт? Войти</a>
+        <a href="/">Назад</a>
+    </div>
+
+    <script>
+    function register() {
+        const fName = document.getElementById("firstName").value;
+        const lName = document.getElementById("lastName").value;
+        const pass = document.getElementById("password").value;
+
+        if(!fName || !pass) return alert("Заполните Имя и Пароль");
+
+        fetch("/register", {
+            method: "POST",
+            headers: {"Content-Type": "application/json"},
+            body: JSON.stringify({
+                firstName: fName,
+                lastName: lName,
+                password: pass
+            })
         })
-    }).then(() => location.href = "/login.html");
-}
-</script>
+        .then(res => {
+            if(res.ok) {
+                alert("Успешно! Теперь войдите.");
+                location.href = "/login.html";
+            } else {
+                alert("Ошибка при регистрации");
+            }
+        })
+        .catch(err => alert("Ошибка соединения"));
+    }
+    </script>
+
+</body>
+</html>
