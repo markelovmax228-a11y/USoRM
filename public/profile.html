@@ -9,12 +9,10 @@ fetch("/me")
     profile.innerHTML = `
         <div class="passport">
             <h2>Паспорт</h2>
-            <p><b>Имя:</b> ${user.firstName}</p>
-            <p><b>Фамилия:</b> ${user.lastName}</p>
-            <p><b>Серия:</b> ${user.passportSeries}</p>
-            <p><b>Номер:</b> ${user.passportNumber}</p>
-            <p><b>Роль:</b> ${user.role === "leader" ? "Глава страны" : "Гражданин"}</p>
-        </div>
-    `;
+            <p>${user.firstName}</p>
+            <p>Серия: 118</p>
+            <p>Номер: ${user.passportNumber}</p>
+            <p>${user.role === "leader" ? "Глава" : "Гражданин"}</p>
+        `;
 });
 </script>
