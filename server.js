@@ -16,45 +16,49 @@ app.use(session({
 }));
 
 // ===== БАЗА =====
-db.run(`CREATE TABLE IF NOT EXISTS users (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    firstName TEXT,
-    lastName TEXT,
-    password TEXT,
-    passportSeries INTEGER DEFAULT 118,
-    passportNumber INTEGER,
-    role TEXT
-)`);
+db.serialize(() => {
 
-db.run(`CREATE TABLE IF NOT EXISTS posts (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    content TEXT,
-    authorId INTEGER
-)`);
+    db.run(`CREATE TABLE IF NOT EXISTS users (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        firstName TEXT,
+        password TEXT,
+        role TEXT,
+        passportSeries INTEGER DEFAULT 118,
+        passportNumber INTEGER
+    )`);
 
-db.run(`CREATE TABLE IF NOT EXISTS notifications (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    text TEXT
-)`);
+    db.run(`CREATE TABLE IF NOT EXISTS posts (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        content TEXT,
+        author TEXT
+    )`);
+
+    // 👉 создаём 2 глав автоматически
+    db.get("SELECT COUNT(*) as count FROM users", (err, row) => {
+        if (row.count === 0) {
+            db.run(`INSERT INTO users 
+                (firstName, password, role, passportNumber)
+                VALUES 
+                ("Максим", "123", "leader", 1),
+                ("Роман", "123", "leader", 2)
+            `);
+        }
+    });
+});
 
 // ===== РЕГИСТРАЦИЯ =====
 app.post("/register", (req, res) => {
-    const { firstName, lastName, password } = req.body;
+    const { firstName, password } = req.body;
 
     db.get("SELECT MAX(passportNumber) as max FROM users", (err, row) => {
-        let nextNumber = row.max ? row.max + 1 : 3;
+        let next = row.max ? row.max + 1 : 3;
 
-        db.get("SELECT COUNT(*) as count FROM users", (err, countRow) => {
-            let role = countRow.count < 2 ? "leader" : "citizen";
-
-            db.run(`INSERT INTO users 
-                (firstName, lastName, password, passportNumber, role)
-                VALUES (?, ?, ?, ?, ?)`,
-                [firstName, lastName, password, nextNumber, role],
-                function () {
-                    res.json({ success: true });
-                });
-        });
+        db.run(`INSERT INTO users 
+            (firstName, password, role, passportNumber)
+            VALUES (?, ?, "citizen", ?)`,
+            [firstName, password, next],
+            () => res.json({ success: true })
+        );
     });
 });
 
@@ -82,12 +86,9 @@ app.get("/me", (req, res) => {
 
 // ===== ПОСТЫ =====
 app.get("/posts", (req, res) => {
-    db.all(`SELECT posts.*, users.firstName 
-            FROM posts 
-            JOIN users ON posts.authorId = users.id`,
-        (err, rows) => {
-            res.json(rows);
-        });
+    db.all("SELECT * FROM posts", (err, rows) => {
+        res.json(rows);
+    });
 });
 
 app.post("/posts", (req, res) => {
@@ -97,26 +98,10 @@ app.post("/posts", (req, res) => {
         return res.sendStatus(403);
     }
 
-    const content = req.body.content;
-    const author = req.session.user.firstName;
-
-    db.run(
-        "INSERT INTO posts (content, authorId) VALUES (?, ?)",
-        [content, req.session.user.id]
-    );
-
-    const text = `Глава страны ${author} выступил с новостью`;
-
-    db.run("INSERT INTO notifications (text) VALUES (?)", [text]);
+    db.run("INSERT INTO posts (content, author) VALUES (?, ?)",
+        [req.body.content, req.session.user.firstName]);
 
     res.json({ success: true });
-});
-
-// ===== УВЕДОМЛЕНИЯ =====
-app.get("/notifications", (req, res) => {
-    db.all("SELECT * FROM notifications ORDER BY id DESC LIMIT 5", (err, rows) => {
-        res.json(rows);
-    });
 });
 
 app.listen(3000, () => console.log("Server running"));
