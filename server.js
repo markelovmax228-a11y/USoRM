@@ -72,37 +72,41 @@ initDB();
 
 // ===== РОУТЫ (адаптированы под PG) =====
 
+// Исправленная регистрация
 app.post("/register", async (req, res) => {
     const { firstName, password } = req.body;
-    const maxRes = await pool.query("SELECT MAX(passportNumber) as max FROM users");
-    let next = (maxRes.rows[0].max || 2) + 1;
-
-    await pool.query(
-        "INSERT INTO users (firstName, password, role, passportNumber) VALUES ($1, $2, 'citizen', $3)",
-        [firstName, password, next]
-    );
-    res.json({ success: true });
-});
-
-app.post("/login", async (req, res) => {
-    const { firstName, password } = req.body;
     try {
-        const userRes = await pool.query(
-            "SELECT * FROM users WHERE firstName=$1 AND password=$2",
-            [firstName, password]
+        // Находим максимальный номер паспорта
+        const maxRes = await pool.query("SELECT MAX(passportNumber) as max FROM users");
+        let nextNumber = (maxRes.rows[0].max || 2) + 1; // Если пусто, начнем с 3
+
+        await pool.query(
+            "INSERT INTO users (firstName, password, role, passportSeries, passportNumber) VALUES ($1, $2, 'citizen', 118, $3)",
+            [firstName, password, nextNumber]
         );
-        
-        if (userRes.rows.length > 0) {
-            // В PG данные лежат в rows[0]
-            req.session.user = userRes.rows[0]; 
-            res.json({ success: true });
-        } else {
-            res.json({ success: false });
-        }
+        res.json({ success: true });
     } catch (err) {
-        res.status(500).json({ error: "Ошибка базы данных" });
+        console.error(err);
+        res.status(500).json({ success: false });
     }
 });
+
+// Исправленный логин (важно для доступа к данным)
+app.post("/login", async (req, res) => {
+    const { firstName, password } = req.body;
+    const userRes = await pool.query(
+        "SELECT * FROM users WHERE firstName=$1 AND password=$2",
+        [firstName, password]
+    );
+    
+    if (userRes.rows.length > 0) {
+        req.session.user = userRes.rows[0]; // Берем ПЕРВОГО пользователя из массива
+        res.json({ success: true });
+    } else {
+        res.json({ success: false });
+    }
+});
+
 
 
 app.get("/me", (req, res) => {
