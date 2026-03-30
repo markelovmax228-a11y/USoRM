@@ -1,0 +1,40 @@
+body {
+    font-family: Arial;
+    background: #f4f4f4;
+    padding: 20px;
+}
+
+input, textarea {
+    display: block;
+    margin: 10px 0;
+    padding: 8px;
+    width: 100%;
+}
+
+button {
+    padding: 10px;
+    border: none;
+    background: #333;
+    color: white;
+    border-radius: 6px;
+}
+
+.post {
+    background: white;
+    padding: 10px;
+    margin-top: 10px;
+    border-radius: 10px;
+}
+
+.notif {
+    background: #ddd;
+    padding: 8px;
+    margin: 5px 0;
+    border-radius: 8px;
+}
+
+.passport {
+    background: white;
+    padding: 15px;
+    border-radius: 10px;
+}
